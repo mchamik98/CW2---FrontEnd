@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Webstore</title>
+
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+    </head>
+    <body>
+        <main>
+        <div id="app">
+        
+                <button class="checkoutButton" @click="displayCollection('lessons')">Get all lessons</button>
+                <button class="checkoutButton" @click="displayCollection('orders')">Get orders</button>
+      
+           
+                <div v-if="showLessons"  v-for="(item, key) in data">
+                    <div class="item">
+                        <p><strong>Subject</strong>: {{item.subject}}</p>
+                        <p><strong>Location</strong>: {{item.location}}</p>
+                        <p><strong>Price</strong>: {{item.price}}</p>
+                        <p><strong>Spaces</strong>: {{item.space}}</p>
+                    </div>
+                </div>
+            
+                <div v-if="showOrders" v-for="(item, key) in data">    
+                    <div class="item">
+                        <p><strong>Name</strong>: {{item.name}}</p>
+                        <p><strong>Phone</strong>: {{item.phone_number}}</p>
+                        <p><strong>lesson ID</strong>: {{item.subject}}</p>
+                        <p><strong>Number of space</strong>: {{item.space}}</p>
+                        
+                    </div>
+                </div>
+                
+            
+            <div v-if="showLessons">
+                
+                    <h2>Add Lessons</h2>
+                    <b>Subject</b>:
+                        <input class="form-group" type="text" v-model="toPostData.subject">
+                   
+                    <b>Location</b>:
+                        <input class="form-group" type="text" v-model="toPostData.location">
+                    
+                    <b>Spaces</b>:
+                        <input class="form-group" type="number" v-model="toPostData.space">
+                   
+                    <b>Price</b>:
+                        <input class="form-group" type="number" v-model="toPostData.price">
+                                        
+                <br></br>
+                <button class="btn"  @click="addNew('lessons')">Add Lesson</button>
+                
+            </div>
+            <div v-if="showOrders">
+                
+                    <h2>Add Data</h2>
+                    <b>Name</b>:
+                        <input class="form-group" type="text" v-model="toPostData.name">
+                    
+                    <b>Phone Number</b>:
+                        <input class="form-group" type="text" v-model="toPostData.phone_number">
+                    
+                    <b>Spaces</b>:
+                        <input class="form-group" type="number" v-model="toPostData.space">
+                    
+                    <label for="lesson"><b>Select lesson</b>:
+                        <select v-model="selected" name="" id="">
+                            <option class="option-lesson" v-for="(item, key) in availableLessons" :value="item._id">
+                                {{item.subject}}
+                              </option>
+                        </select>
+                    </label>                    
+                <br></br>
+                <button class="btn"  @click="addNew('orders')">Submit order</button>
+            
+            </div>
+        </div>
+    </main>
+        <script >
+
+            const app = new Vue({
+                el:"#app",
+                data:{
+                    data:null,
+                    showLessons:false,
+                    showUsers:false,
+                    showOrders:false,
+                    selected:'',    
+                    availableLessons:null,
+                    toPostData:{
+                        subject: " ",
+                        location: " ",
+                        price: 0,
+                        space: 0,
+                        _id: " ",
+                    }
+                },
+                methods : { 
+                    async displayCollection(collectionName) {
+                        if(collectionName == 'lessons'){
+                            this.showLessons = true;
+                            this.showOrders = false
+                        }
+                        if(collectionName == 'orders'){
+                            this.showLessons = false;
+                            this.showOrders = true
+                        }
+                        const response = await fetch("https://cw2individual.herokuapp.com/collection/"+collectionName);
+                        const data = await response.json();
+                        this.data = data;
+                    },
+
+                    async addNew(collectionName){
+                        let newItem;
+                        if(collectionName == 'lessons'){
+                            newItem= {
+                                location: this.toPostData.location,
+                                price: this.toPostData.price,
+                                //numbers need verification
+                                space: this.toPostData.space,
+                                subject: this.toPostData.subject
+                            }
+                        }
+                        if(collectionName == 'orders'){
+                            newItem= {
+                                name: this.toPostData.name,
+                                phone_number: this.toPostData.phone_number,
+                                subject: this.selected,
+                                space: this.toPostData.space
+                            }
+                        }
+
+                        fetch('https://cw2individual.herokuapp.com/collection/'+collectionName+'/',{
+                            method: 'POST',
+                            headers: {
+                                'Content-type': 'application/json',
+                            },
+                            body: JSON.stringify(newItem),
+                        })
+                        .then(response => response.json())
+                        .then(response => {
+                            console.log(response);
+                            window.location.reload()
+                        });
+                    },
+                },
+                async mounted () {
+                    const response = await fetch("https://cw2individual.herokuapp.com/collection/lessons");
+                    const data = await response.json();
+                    this.availableLessons = data;
+                },
+            });
+
+        </script>
+    </body>
+</html>
