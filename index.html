@@ -67,9 +67,9 @@
                     <b>Spaces</b>:
                         <input class="form-group" type="number" v-model="toPostData.space">
                     
-                    <label for="lesson"><b>Select lesson</b>:
+                    <label for="lesson"><b>Subject</b>:
                         <select v-model="selected" name="" id="">
-                            <option class="option-lesson" v-for="(item, key) in availableLessons" :value="item._id">
+                            <option v-for="(item, key) in availableLessons" :value="item._id">
                                 {{item.subject}}
                               </option>
                         </select>
